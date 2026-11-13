@@ -25,6 +25,17 @@ th{background:var(--hd);color:var(--hdt);text-align:left;padding:7px;position:st
 .r{text-align:right;white-space:nowrap}.i{color:var(--ok)}.e{color:var(--no)}.x{background:none;color:var(--no);width:auto;padding:2px 6px}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.bar select{width:auto}
 </style></head><body>
+<div id="gate" style="position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px"><div class="card" style="max-width:320px;width:100%"><h2>Acceso restringido</h2><label>Contraseña<input type="password" id="pw" autocomplete="current-password"></label><div id="pe" class="e" style="min-height:18px;font-size:12px;margin:6px 0"></div><button id="pb">Ingresar</button></div></div>
+<script>
+const HASH="eac2ae0f4e78a21cf1e98ffe10f6d6aac0916e0a525614e89f39fbcddef2c3a6";
+async function hx(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}
+function unlock(){document.getElementById("gate").style.display="none"}
+try{if(sessionStorage.getItem("ok")===HASH)unlock()}catch(e){}
+async function tryPw(){const v=document.getElementById("pw").value;let ok=false;
+ try{ok=(await hx("bomberos-sal-"+v))===HASH}catch(e){document.getElementById("pe").textContent="Abre la página con https.";return}
+ if(ok){try{sessionStorage.setItem("ok",HASH)}catch(e){}unlock()}else document.getElementById("pe").textContent="Contraseña incorrecta."}
+document.getElementById("pb").onclick=tryPw;document.getElementById("pw").onkeydown=e=>{if(e.key==="Enter")tryPw()};
+</script>
 <h1>Registro de ingresos y egresos</h1>
 <div class="top">
  <div class="card"><div class="mut">Saldo banco (actual)</div><div class="big" id="bank"></div>
@@ -52,10 +63,10 @@ th{background:var(--hd);color:var(--hdt);text-align:left;padding:7px;position:st
 <datalist id="cats"><option>alimentación<option>mantenciones<option>combustible<option>proyecto<option>donaciones<option>reparaciones<option>revisión técnica</datalist>
 <script>
 const NAMES=["Ingresos propios","Primera compañía","Segunda compañía","Tercera compañía","Acreencias bancarias","Ayuda extraordinaria","Operaciones","Inversiones","Artículo 45","Subvención municipal"];
-const INI=[2968782,8573432,804260,2758204,60727489,0,0,0,0,0];
+const INI=[0,0,0,0,0,0,0,0,0,0];
 const K="planilla2026";let S;
 try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
-if(!S)S={bank:112906081,ini:INI.slice(),moves:[]};
+if(!S)S={bank:0,ini:INI.slice(),moves:[]};
 let sel="";
 const $=id=>document.getElementById(id);
 const fm=n=>(n<0?"-":"")+"$"+Math.abs(Math.round(n)).toLocaleString("es-CL");
